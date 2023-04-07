@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>CommCare FAQ</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      div {
+        margin-bottom: 20px;
+      }
+
+      button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      input {
+        padding: 12px;
+        font-size: 16px;
+        width: 100%;
+        border: none;
+        border-radius: 20px;
+        background-color: #f1f1f1;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+
+      #response {
+        padding: 10px;
+        border-radius: 20px;
+        background-color: #f1f1f1;
+        margin-bottom: 10px;
+        display: inline-block;
+        max-width: 75%;
+      }
+
+      #response p {
+        margin: 0;
+      }
+
+      #response p strong {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      #response iframe {
+        margin-top: 10px;
+        display: block;
+      }
+
+      #response:last-of-type {
+        margin-bottom: 0;
+      }
+
+      .hint {
+        background-color: red;
+        color: white;
+        font-size: 12px;
+        text-align: center;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CommCare FAQ - Developed By Iraq MTSU</h1>
+    <p class="hint">CommCare FAQ version 0.0.1, under testing</p>
+    <div>
+      <input type="text" id="question" name="question" required placeholder="Ask your question here...">
+      <button id="submit-btn">Submit</button>
+      <button id="clear-btn">Clear</button>
+    </div>
+    <div id="response"></div>
+  </body>
+</html>
+
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      const API_URL = 'https://api.openai.com/v1/engines/text-davinci-002/completions';
+const API_KEY = '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';
+
+const questionInput = document.getElementById('question');
+const submitButton = document.getElementById('submit-btn');
+const responseDiv = document.getElementById('response');
+const clearButton = document.getElementById('clear-btn');
+
+function clear() {
+  questionInput.value = '';
+  responseDiv.innerHTML = '';
+}
+
+async function chatGPT(query) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${API_KEY}`,
+  };
+
+  const data = {
+    prompt: `This is an FAQ chatbot for CommCare-related questions.\nUser: ${query}\n`,
+    max_tokens: 500,
+    n: 1,
+    stop: null,
+    temperature: 0.5,
+  };
+
+  try {
+    const response = await axios.post(API_URL, data, { headers });
+    const answer = response.data.choices[0].text;
+
+    if (query.toLowerCase().includes('formula')) {
+      // Generate example formula
+      const exampleFormula = 'a + b * c / d';
+      return `${answer}<br><br>Here's an example formula: ${exampleFormula}`;
+    } else if (query.toLowerCase().includes('complex function')) {
+      // Generate example complex function
+      const exampleFunction = 'if(equals(/data/question1, \'Yes\'), add(/data/question2, 5), subtract(/data/question2, 2))';
+      return `${answer}<br><br>Here's an example complex function: ${exampleFunction}`;
+    } else {
+      return answer;
+    }
+  } catch (error) {
+    console.error('Error:', error.response.data);
+    return null;
+  }
+}
+
+
+submitButton.addEventListener('click', async () => {
+  const question = questionInput.value.trim();
+  if (question) {
+    const answer = await chatGPT(question);
+
+    // Use response variants to make the conversation feel more natural
+    const responseVariants = [
+      "Here's what I found:",
+      "This is what I found:",
+      "I think this might help:",
+      "Take a look at this:",
+    ];
+    const selectedResponseVariant = responseVariants[Math.floor(Math.random() * responseVariants.length)];
+    const formattedAnswer = `<p><strong>${selectedResponseVariant}</strong><br>${answer}</p>`;
+
+    // Incorporate visual aids to help illustrate answers
+  if (question.toLowerCase().includes('how to')) {
+  const videoLink = "https://www.youtube.com/watch?v=fMkuOp_3JDI"; // Replace with actual video link
+  const answerWithVisualAid = `${answer}<br><br><iframe width="560" height="315" src="${videoLink}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  responseDiv.innerHTML = answerWithVisualAid;
+} else {
+  responseDiv.innerHTML = formattedAnswer;
+}
+
+  }
+});
+
+     
+    </script>
+  </body>
+</html>
